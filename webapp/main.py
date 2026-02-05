@@ -7,6 +7,9 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+# API endpoint to get cities for a given country
+from fastapi import Query
+from fastapi.responses import JSONResponse
 
 current_dir = dirname(abspath(__file__))
 static_path = join(current_dir, "static")
@@ -42,6 +45,23 @@ def generate(body: Body):
     return {'token': string}
 
 # Create a FastAPI endpoint that accepts a POST request with a JSON body containing a single field called "text" and returns a checksum of the text
+
+
+# Sample data: country to cities mapping
+COUNTRY_CITIES = {
+    "USA": ["New York", "Los Angeles", "Chicago", "Houston"],
+    "India": ["Mumbai", "Delhi", "Bangalore", "Chennai"],
+    "UK": ["London", "Manchester", "Liverpool", "Birmingham"],
+    "France": ["Paris", "Lyon", "Marseille", "Nice"],
+}
+
+
+@app.get('/api/cities')
+def get_cities(country: str = Query(..., description="Country name")):
+    cities = COUNTRY_CITIES.get(country)
+    if cities is None:
+        return JSONResponse(status_code=404, content={"error": f"No cities found for country '{country}'."})
+    return {"country": country, "cities": cities}
 
 
 @app.post('/checksum')
